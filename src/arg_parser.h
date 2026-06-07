@@ -61,6 +61,9 @@ SHUFFLER
         -c, --chunk-size UNSIGNED
             Default: 8
 
+        --no-warnings
+            Optional. Disabled by default.
+
     Available Algorithms:
 
 )";
@@ -403,6 +406,15 @@ struct app_config argument_parser(int argc, char* argv[]) {
                     throw std::runtime_error("Internal error.");
 
                 i++;
+
+            } else if (arg == "--no-warnings") {
+
+                if (shuffler_options_active)
+                    configuration.shuffler_opts.warnings = false;
+                else if (reshuffler_options_active)
+                    throw std::runtime_error(arg + " is only a suboption for shuffler and not supported/required by reshuffler yet. \nUsed with reshuffler.");
+                else
+                    throw std::runtime_error("Internal error.");
 
             } else if (arg == "--type" || arg == "-t") {
                 

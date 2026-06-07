@@ -11,6 +11,7 @@
 
 struct shuffler_options {
 
+    bool warnings = true;
     std::string algorithm = "not";
     std::size_t chunk_size = 8ULL;
     std::optional<std::size_t> modification_factor;
@@ -40,6 +41,30 @@ struct app_config {
 };
 
 namespace valid_arguments {
+
+    namespace exceptions {
+
+        class validation_exception : public std::runtime_error {
+            public:
+            explicit validation_exception(const std::string& msg) : std::runtime_error("Validation error: " + msg) {};
+        };
+
+        class invalid_setup : public std::runtime_error {
+            public:
+            explicit invalid_setup(const std::string& submodule, const std::string& msg) : std::runtime_error("Invalid argument setup. Error by " + submodule + "\nError: " + msg) {};
+        };
+
+        class missing_arguments : public std::runtime_error {
+            public:
+            explicit missing_arguments(const std::string& msg) : std::runtime_error("Missing required argument: " + msg) {};
+        };
+
+        class app_invalid_argument : public std::invalid_argument {
+            public:
+            explicit app_invalid_argument(const std::string& msg) : std::invalid_argument("Invalid argument passed: " + msg) {};
+        };
+
+    };
 
     inline const std::unordered_map<std::string, std::string> shuffler = {
 
@@ -73,6 +98,81 @@ namespace valid_arguments {
         return it->second;
 
     }
+
+    void validate_arguments(struct app_config& conf) {
+
+        if (conf.input_file.empty())
+            throw valid_arguments::exceptions::missing_arguments("Input file cannot be empty!");
+
+        if (conf.output_file.empty()) {
+
+            // decide a name for output file if empty.
+
+            std::string modifier_name = (conf.is_encoder) ? "_encoded" : "_decoded";
+
+            size_t extension_position = conf.input_file.rfind('.', std::string::npos);
+            if (extension_position == std::string::npos) {
+                conf.output_file = conf.input_file + modifier_name;
+            } else {
+                conf.output_file = conf.input_file.substr(0x00U, extension_position) + modifier_name + conf.input_file.substr(extension_position, std::string::npos);
+            }
+
+        }
+
+        if (!conf.shuffler_opts.modification_factor.has_value()) {
+            throw valid_arguments::exceptions::missing_arguments("Modification factor must be provided for shuffler.");
+        }
+
+        if (*conf.shuffler_opts.modification_factor > conf.shuffler_opts.chunk_size) {
+            // we literally do nothing within a chunk
+            throw valid_arguments::exceptions::invalid_setup("Shuffler", "Modification factor cannot be greater than chunk size. The shuffler will do nothing.\nChunk size: " + std::to_string(conf.shuffler_opts.chunk_size) + "\nModification factor: " + std::to_string(*conf.shuffler_opts.modification_factor));
+        }
+
+        if (conf.shuffler_opts.chunk_size == 0)
+            throw valid_arguments::exceptions::invalid_setup("Shuffler", "Chunk size cannot be zero.");
+
+        if (*conf.shuffler_opts.modification_factor == 0)
+            throw valid_arguments::exceptions::app_invalid_argument("Modification factor cannot be zero.");
+
+        if (!conf.reshuffler_opts.seed.has_value())
+            throw valid_arguments::exceptions::missing_arguments("Reshuffler needs a base 'seed' value.");
+
+        if (conf.reshuffler_opts.block_size == 0)
+            throw valid_arguments::exceptions::invalid_setup("Reshuffler", "Block size must be non-zero positive value.");
+
+        if (conf.reshuffler_opts.chunk_size == 0)
+            throw valid_arguments::exceptions::invalid_setup("Reshuffler", "Chunk size must be non-zero positive value.");
+
+        if (conf.reshuffler_opts.type == "bit") {
+
+            if (!valid_arguments::reshuffler_bit.count(conf.reshuffler_opts.algorithm)) {
+                throw valid_arguments::exceptions::app_invalid_argument("Unknown reshuffler-bit algorithm: " + conf.reshuffler_opts.algorithm);
+            }
+            
+        } else if (conf.reshuffler_opts.type == "chunk") {
+
+            if (!valid_arguments::reshuffler_chunk.count(conf.reshuffler_opts.algorithm)) {
+                throw valid_arguments::exceptions::app_invalid_argument("Unknown reshuffler-chunk algorithm: " + conf.reshuffler_opts.algorithm);
+            }
+
+        } else {
+            throw valid_arguments::exceptions::app_invalid_argument("Unknown reshuffler type set: " + conf.reshuffler_opts.type);
+        }
+
+        // All settings validated.
+        // only provide warnings if the setting is enabled.
+
+        if (conf.shuffler_opts.warnings) {
+
+            if (*conf.shuffler_opts.modification_factor == 1)
+                throw valid_arguments::exceptions::invalid_setup("Shuffler", "Setting modification factor as one is highly insecure. Pass --no-warnings sub-option to force the input.");
+
+        }
+
+        // all good.
+        return;
+
+    };
 
 };
 
