@@ -1,0 +1,10 @@
+tests/
+*.exe
+*.out
+*.elf
+
+src/*.out
+src/*.elf
+src/*.exe
+
+build/
