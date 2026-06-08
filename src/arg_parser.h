@@ -108,6 +108,10 @@ SHUFFLER
         --no-warnings
             Optional. Disabled by default.
 
+        --disable
+            Will not invoke shuffler.
+            Optional. False by default.
+
     Available Algorithms:
 
 )";
@@ -156,6 +160,10 @@ RESHUFFLER
                 * Entries must be comma separated.
                 * Spaces are ignored.
                 * Unlimited values allowed.
+        
+        --disable
+            Will not invoke shuffler.
+            Optional. False by default.
 
 RESHUFFLER TYPES
 ----------------
@@ -251,10 +259,23 @@ static inline size_t get_option_value_number(size_t ctr, const std::vector<std::
         if (cutoff_pos < value.size())
             throw std::invalid_argument("Error: No valid conversion could be performed.");
 
-    } catch (const std::invalid_argument& e) {
+    } 
+    
+    #ifdef LOCKER_ARG_PARSER_DEBUG
+    catch (const std::invalid_argument& e) {
+        throw std::invalid_argument("Error: No valid conversion could be performed.\nE: " + std::string(e.what()));
+    #else
+    catch (const std::invalid_argument&) {
         throw std::invalid_argument("Error: No valid conversion could be performed.");
-    } catch (const std::out_of_range& e) {
+    #endif
+    } 
+    #ifdef LOCKER_ARG_PARSER_DEBUG
+    catch (const std::out_of_range& e) {
+        throw std::out_of_range("Error: Value is too large for unsigned long long.\nE: " + std::string(e.what()));
+    #else
+    catch (const std::out_of_range&) {
         throw std::out_of_range("Error: Value is too large for unsigned long long.");
+    #endif
     }
 
     // There is a next argument and it doesn't start with a '-'
@@ -284,10 +305,22 @@ static inline size_t get_option_value_u_number(size_t ctr, const std::vector<std
         if (cutoff_pos < value.size())
             throw std::invalid_argument("Error: No valid conversion could be performed.");
 
-    } catch (const std::invalid_argument& e) {
+    }
+    #ifdef LOCKER_ARG_PARSER_DEBUG
+    catch (const std::invalid_argument& e) {
+        throw std::invalid_argument("Error: No valid conversion could be performed.\nE: " + std::string(e.what()));
+    #else
+    catch (const std::invalid_argument&) {
         throw std::invalid_argument("Error: No valid conversion could be performed.");
-    } catch (const std::out_of_range& e) {
+    #endif
+    } 
+    #ifdef LOCKER_ARG_PARSER_DEBUG
+    catch (const std::out_of_range& e) {
+        throw std::out_of_range("Error: Value is too large for unsigned long long.\nE: " + e.what());
+    #else
+    catch (const std::out_of_range&) {
         throw std::out_of_range("Error: Value is too large for unsigned long long.");
+    #endif
     }
 
     // There is a next argument and it doesn't start with a '-'
@@ -331,7 +364,8 @@ struct app_config argument_parser(int argc, char* argv[]) {
     bool reshuffler_options_active = false;
     bool suboptions_active = false;
 
-    long long _tmp_nxt_arg_num = 0x00LL;
+    // There is no requirement to capture a signed number yet.
+    // long long _tmp_nxt_arg_num = 0x00LL;
     unsigned long long _tmp_nxt_arg_u_num = 0x00ULL;
 
     std::string _tmp_nxt_arg = ""; // temporary place to store next arguments.
@@ -457,6 +491,15 @@ struct app_config argument_parser(int argc, char* argv[]) {
                     configuration.shuffler_opts.warnings = false;
                 else if (reshuffler_options_active)
                     throw std::runtime_error(arg + " is only a suboption for shuffler and not supported/required by reshuffler yet. \nUsed with reshuffler.");
+                else
+                    throw std::runtime_error("Internal error.");
+
+            } else if (arg == "--disable") {
+
+                if (shuffler_options_active)
+                    configuration.shuffler_opts.disabled = true;
+                else if (reshuffler_options_active)
+                    configuration.reshuffler_opts.disabled = true;
                 else
                     throw std::runtime_error("Internal error.");
 
@@ -609,15 +652,27 @@ struct app_config argument_parser(int argc, char* argv[]) {
                         if (numeric_convert_cutoff_pos < _tmp_nxt_arg.size())
                             throw std::runtime_error("Error: Invalid numeric value for ram usage: " + _tmp_nxt_arg);
 
-                        if (memory_allowed_size > (SIZE_MAX / multiplication_factor))
-                            throw std::runtime_error("Too much ram usage allowed. Maximum allowed: " + std::to_string((SIZE_MAX / multiplication_factor)) + std::string(1, last_char));
+                        if (memory_allowed_size > (locker_limits_MAX_WORKSPACE_BYTES / multiplication_factor))
+                            throw std::runtime_error("Too much ram usage allowed. Maximum allowed: " + std::to_string((locker_limits_MAX_WORKSPACE_BYTES / multiplication_factor)) + std::string(1, last_char));
 
                         memory_allowed_size *= multiplication_factor;
 
-                    } catch (const std::invalid_argument& e) {
+                    }
+                    #ifdef LOCKER_ARG_PARSER_DEBUG
+                    catch (const std::invalid_argument& e) {
+                        throw std::runtime_error("Error: Invalid numeric value for ram usage: " + _tmp_nxt_arg + "\nE: " + std::string(e.what()));
+                    #else
+                    catch (const std::invalid_argument&) {
                         throw std::runtime_error("Error: Invalid numeric value for ram usage: " + _tmp_nxt_arg);
-                    } catch (const std::out_of_range& e) {
+                    #endif
+                    }
+                    #ifdef LOCKER_ARG_PARSER_DEBUG
+                    catch (const std::out_of_range& e) {
+                        throw std::runtime_error("Error: Value for ram usage is too large: " + _tmp_nxt_arg + "\nE: " + std::string(e.what()));
+                    #else
+                    catch (const std::out_of_range&) {
                         throw std::runtime_error("Error: Value for ram usage is too large: " + _tmp_nxt_arg);
+                    #endif
                     }
 
                     configuration.memory_usage = memory_allowed_size;

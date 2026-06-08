@@ -19,6 +19,9 @@ class Locker {
 
     std::size_t ram_usage_allowed = 512*1024*1024ULL;
 
+    bool reshuffler_disabled = false;
+    bool shuffler_disabled = false;
+
     // encoder/decoder status
     bool is_encoding = true;
 
@@ -47,6 +50,7 @@ class Locker {
 
     /* Functions */
     void validate_configuration(const struct app_config& configuration);
+    void workflow(const std::vector<unsigned char>& data);
 
     public:
     Locker(const struct app_config& configuration);

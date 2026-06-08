@@ -67,7 +67,7 @@ namespace reshuffle {
 
             {
                 "chunk", {
-                    { "mirror", reshuffle::chunk::algorithms::mirror }
+                    // { "mirror", reshuffle::chunk::algorithms::mirror }
                 }
             }
 

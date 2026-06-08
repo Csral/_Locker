@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <stdexcept>
 
+constexpr std::size_t locker_limits_MAX_WORKSPACE_BYTES = SIZE_MAX / 8;
 constexpr std::size_t locker_limits_minimum_ram_bytes = 2*1024*1024; // 2 MB
 
 struct shuffler_options {
@@ -17,6 +18,8 @@ struct shuffler_options {
     std::string algorithm = "not";
     std::size_t chunk_size = 8ULL;
     std::optional<std::size_t> modification_factor;
+
+    bool disabled = false;
 
 };
 
@@ -28,6 +31,8 @@ struct reshuffler_options {
     std::size_t block_size = 4ULL;
     std::optional<std::size_t> seed;
     std::vector<unsigned long> extargs;
+
+    bool disabled = false;
 
 };
 
@@ -105,7 +110,7 @@ namespace valid_arguments {
 
     }
 
-    void validate_arguments(struct app_config& conf) {
+    inline void validate_arguments(struct app_config& conf) {
 
         if (conf.input_file.empty())
             throw valid_arguments::exceptions::missing_arguments("Input file cannot be empty!");

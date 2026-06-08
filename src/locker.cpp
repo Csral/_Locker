@@ -4,7 +4,15 @@
 
 #include "algorithm_registry.h"
 
-void validate_configuration(const struct app_config& configuration) {
+/*
+
+todo: Delete output file if error occurs ------------------------> (1)
+todo: Add --safe-write
+todo: Add a few try-catch to help with (1) but propagate them upward.
+
+*/
+
+void Locker::validate_configuration(const struct app_config& configuration) {
 
     //? check: What happens if user gives more bits than file size - etc. Mathematical validations basically.
     //? think of it later ig.
@@ -27,6 +35,9 @@ void validate_configuration(const struct app_config& configuration) {
 
     }
 
+    if (configuration.reshuffler_opts.disabled && configuration.shuffler_opts.disabled)
+        throw std::runtime_error("Both shuffler and reshuffler disabled. Nothing to do!");
+
     // all good
     return;
 
@@ -47,6 +58,9 @@ Locker::Locker(const struct app_config& configuration) {
     this->input_file = configuration.input_file;
     this->ram_usage_allowed = configuration.memory_usage;
     this->is_encoding = configuration.is_encoder;
+
+    this->reshuffler_disabled = configuration.reshuffler_opts.disabled;
+    this->shuffler_disabled = configuration.shuffler_opts.disabled;
 
     /* Shuffler config */
     this->shuffle_chunk_size = configuration.shuffler_opts.chunk_size;
@@ -96,6 +110,105 @@ Locker::~Locker(void) {
 
 }
 
+void Locker::workflow(const std::vector<unsigned char>& data) {
+
+    // todo: Better error handling.
+
+    if (this->is_encoding) {
+
+        std::size_t max_bits_in_workflow = data.size() * 8;
+
+        /* First invoke shuffler */
+        if (!this->shuffler_disabled) {
+            shuffle::shuffle_context_t s_ctx;
+            s_ctx.ptr = (void*) data.data();
+            s_ctx.size_bits = max_bits_in_workflow;
+            s_ctx.chunk_size_bits = this->shuffle_chunk_size;
+            s_ctx.modification_factor = this->modification_factor;
+
+            // Call shuffler upon the data.
+            shuffle::dispatch_algorithm(this->shuffle_algorithm, this->is_encoding, s_ctx);
+        }
+
+        /* Now invoke reshuffler */
+        if (!this->reshuffler_disabled) {
+
+            //! Bug: Reshuffler should get 1 reshuffle block. This should be a loop.
+
+            std::size_t bits_used_in_one_run = this->reshuffle_chunks_size * this->block_size;
+            reshuffle::reshuffle_context_t r_ctx;
+            
+            r_ctx.buf = (void*) data.data();
+            r_ctx.chunk_size_bits = this->reshuffle_chunks_size;
+            r_ctx.block_size = this->block_size;
+            r_ctx.seed = this->seed;
+            r_ctx.extargs = this->extargs;
+
+            std::string type = (this->type_is_bit) ? "bit" : "chunk";
+
+            for (std::size_t ctr = 0; ctr < max_bits_in_workflow; ctr += bits_used_in_one_run) {
+
+                r_ctx.buf = (void*) (data.data() + (ctr / 8));
+                r_ctx.offset_from_previous_block = (ctr % 8);
+                // Call reshuffler upon the data.
+                reshuffle::dispatch_algorithm(type, this->reshuffle_algorithm, r_ctx);
+
+            }
+
+        }
+
+    } else {
+
+        // Do the inverse in decode
+
+        std::size_t max_bits_in_workflow = data.size() * 8;
+
+        /* First invoke reshuffler */
+        if (!this->reshuffler_disabled) {
+
+            //! Bug: Reshuffler should get 1 reshuffle block. This should be a loop.
+
+            std::size_t bits_used_in_one_run = this->reshuffle_chunks_size * this->block_size;
+            reshuffle::reshuffle_context_t r_ctx;
+            
+            r_ctx.buf = (void*) data.data();
+            r_ctx.chunk_size_bits = this->reshuffle_chunks_size;
+            r_ctx.block_size = this->block_size;
+            r_ctx.seed = this->seed;
+            r_ctx.extargs = this->extargs;
+
+            std::string type = (this->type_is_bit) ? "bit" : "chunk";
+
+            for (std::size_t ctr = 0; ctr < max_bits_in_workflow; ctr += bits_used_in_one_run) {
+
+                r_ctx.buf = (void*) (data.data() + (ctr / 8));
+                r_ctx.offset_from_previous_block = (ctr % 8);
+                // Call reshuffler upon the data.
+                reshuffle::dispatch_algorithm(type, this->reshuffle_algorithm, r_ctx);
+
+            }
+
+        }
+
+        /* Now invoke shuffler */
+        if (!this->shuffler_disabled) {
+            shuffle::shuffle_context_t s_ctx;
+            s_ctx.ptr = (void*) data.data();
+            s_ctx.size_bits = max_bits_in_workflow;
+            s_ctx.chunk_size_bits = this->shuffle_chunk_size;
+            s_ctx.modification_factor = this->modification_factor;
+
+            // Call shuffler upon the data.
+            shuffle::dispatch_algorithm(this->shuffle_algorithm, this->is_encoding, s_ctx);
+        }
+
+    }
+
+    // the data is modified.
+    return;
+
+};
+
 void Locker::lock(void) {
 
     /* Encode/Decode the input file */
@@ -105,7 +218,7 @@ void Locker::lock(void) {
     this->input_file_handle.open(input_file_path, std::ios::in | std::ios::binary);
 
     if (!this->input_file_handle.is_open()) {
-        throw std::runtime_error("Failed to open file.");
+        throw std::runtime_error("Failed to open input file.");
     }
 
     std::uintmax_t file_size = std::filesystem::file_size(input_file_path);
@@ -116,19 +229,32 @@ void Locker::lock(void) {
     } else {
         // we read it all and run the workflow once.
 
-        std::vector<unsigned char> buffer(file_size);
+        const std::size_t file_buffer_size = static_cast<std::size_t>(file_size);
 
-        if (!this->input_file_handle.read(reinterpret_cast<char*>(buffer.data()), file_size)) {
+        std::vector<unsigned char> buffer(file_buffer_size);
+
+        if (!this->input_file_handle.read(reinterpret_cast<char*>(buffer.data()), file_buffer_size)) {
             throw std::runtime_error("Failed to read the file.");
         }
 
         this->input_file_handle.close();
 
-        // make a private workflow function to easen the task.
+        // invoke the workflow
+        this->workflow(buffer);
+        // write the output.
+        // this will change when --safe-write is added. Better to use a private method.
+
+        std::filesystem::path output_file_path = std::filesystem::weakly_canonical(this->output_file);
+        this->output_file_handler.open(output_file_path, std::ios::out | std::ios::binary);
+
+        if (!this->output_file_handler.is_open()) {
+            throw std::runtime_error("Failed to open output file.");
+        }
+
+        this->output_file_handler.write(reinterpret_cast<char*>(buffer.data()), file_buffer_size);
+        this->output_file_handler.flush();
+        this->output_file_handler.close();
 
     }
-    /* First invoke Shuffler */
-
-    // shuffle::dispatch_algorithm(this->shuffle_algorithm, this->is_encoding, NULL);
 
 };

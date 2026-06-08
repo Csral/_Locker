@@ -20,6 +20,7 @@ namespace reshuffle {
 
         std::vector<unsigned long> extargs;
 
+        std::size_t offset_from_previous_block;
         // optional to validate
         // size_t max_size_bits;
 

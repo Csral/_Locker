@@ -1,4 +1,4 @@
-#define LOCKER_APP_CONFIG_PRINTER_REQUIRED
+// #define LOCKER_APP_CONFIG_PRINTER_REQUIRED
 #include "args.h"
 #include "arg_parser.h"
 #include "locker.h"
@@ -41,6 +41,8 @@ int main(int argc, char* argv[]) {
 
     try {
         Locker app_locker(configuration);
+        // Encode/decode
+        app_locker.lock();
     } catch (const std::runtime_error& err) {
         std::cerr << err.what() << "\n";
         return 1;
@@ -49,7 +51,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::cout << configuration << "\n";
+    // std::cout << configuration << "\n";
     return 0;
 
 };
