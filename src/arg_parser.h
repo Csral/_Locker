@@ -41,6 +41,50 @@ GENERAL OPTIONS
         Default:
             INPUT_FILE_encoded.<original_extension>
 
+    -M, --memory SIZE{M,G}
+        Set the maximum amount of RAM the locker may use.
+
+        This value is used by Locker to determine how much
+        file data may be processed in memory at a time.
+
+        Note:
+            This is not a strict process memory limit.
+            Actual memory usage may exceed the specified
+            value due to internal allocations and runtime
+            overhead.
+
+        Suffixes:
+            M  Megabytes
+            G  Gigabytes
+
+        If no suffix is specified, M is assumed.
+
+        Examples:
+            -M 512
+            -M 512M
+            -M 2G
+
+        Default:
+            512M
+
+    --app-warnings-off
+        Disable application warnings.
+
+        Warnings provide recommendations about potentially
+        suboptimal configurations and performance-related settings.
+
+        Default:
+            Warnings are enabled.
+
+    --app-warnings-on
+        Enable application warnings.
+
+        Warnings provide recommendations about potentially
+        suboptimal configurations and performance-related settings.
+
+        Default:
+            Warnings are enabled.
+
     -h, --help
         Display this help message.
 
@@ -538,6 +582,56 @@ struct app_config argument_parser(int argc, char* argv[]) {
 
                 i++;
 
+            } else if (arg == "-M" || arg == "--memory") {
+
+                try {
+
+                    std::size_t multiplication_factor = 1024ULL * 1024ULL; // MB
+                    std::size_t memory_allowed_size = 0;
+                    std::size_t numeric_convert_cutoff_pos = 0x00ULL;
+
+                    _tmp_nxt_arg = get_option_value(i, arguments);
+                    char last_char = _tmp_nxt_arg.back();
+
+                    if ((last_char < 48) || (last_char > 57)) // not a number - clear it.
+                        _tmp_nxt_arg.resize(_tmp_nxt_arg.size() - 1);
+
+                    if (last_char == 'G' || last_char == 'g') // We don't care about anything else.
+                        multiplication_factor *= 1024ULL;
+                    else if (last_char == 'M' || last_char == 'm') {}
+                    else if ((last_char > 47) && (last_char < 58)) {}
+                    else
+                        throw std::runtime_error("Invalid size for ram usage specified: " + std::string(1, last_char)); // Well, looks good for error message.
+
+                    try {
+                        memory_allowed_size = std::stoull(_tmp_nxt_arg, &numeric_convert_cutoff_pos);
+
+                        if (numeric_convert_cutoff_pos < _tmp_nxt_arg.size())
+                            throw std::runtime_error("Error: Invalid numeric value for ram usage: " + _tmp_nxt_arg);
+
+                        if (memory_allowed_size > (SIZE_MAX / multiplication_factor))
+                            throw std::runtime_error("Too much ram usage allowed. Maximum allowed: " + std::to_string((SIZE_MAX / multiplication_factor)) + std::string(1, last_char));
+
+                        memory_allowed_size *= multiplication_factor;
+
+                    } catch (const std::invalid_argument& e) {
+                        throw std::runtime_error("Error: Invalid numeric value for ram usage: " + _tmp_nxt_arg);
+                    } catch (const std::out_of_range& e) {
+                        throw std::runtime_error("Error: Value for ram usage is too large: " + _tmp_nxt_arg);
+                    }
+
+                    configuration.memory_usage = memory_allowed_size;
+
+                } catch (const std::out_of_range&) {
+                    throw std::runtime_error(arg + " expects a memory usage limit.");
+                }
+
+                i++;
+
+            } else if (arg == "--app-warnings-on") {
+                configuration.warnings = true;
+            } else if (arg == "--app-warnings-off") {
+                configuration.warnings = false;
             } else if (arg == "--decode" || arg == "-d") {
 
                 if (configuration.is_encoder)

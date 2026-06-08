@@ -70,7 +70,7 @@ namespace arguments_registry {
         }
     };
 
-    void print_registry(const registry_t& registry) {
+    inline void print_registry(const registry_t& registry) {
         if (registry.empty()) {
             std::cout << "    (none)\n";
             return;

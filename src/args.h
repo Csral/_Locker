@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <stdexcept>
 
+constexpr std::size_t locker_limits_minimum_ram_bytes = 2*1024*1024; // 2 MB
+
 struct shuffler_options {
 
     bool warnings = true;
@@ -34,6 +36,10 @@ struct app_config {
     std::string input_file;
     std::string output_file;
     bool is_encoder = true;
+
+    bool warnings = true;
+
+    std::size_t memory_usage = 512ULL * 1024ULL * 1024ULL;
 
     struct shuffler_options shuffler_opts;
     struct reshuffler_options reshuffler_opts;
@@ -119,6 +125,10 @@ namespace valid_arguments {
 
         }
 
+        if (conf.memory_usage == 0) {
+            throw valid_arguments::exceptions::app_invalid_argument("Allowed memory usage cannot be 0 bytes.");
+        }
+
         if (!conf.shuffler_opts.modification_factor.has_value()) {
             throw valid_arguments::exceptions::missing_arguments("Modification factor must be provided for shuffler.");
         }
@@ -161,6 +171,14 @@ namespace valid_arguments {
 
         // All settings validated.
         // only provide warnings if the setting is enabled.
+
+        if (conf.warnings) {
+
+            if (conf.memory_usage < locker_limits_minimum_ram_bytes) {
+                throw valid_arguments::exceptions::app_invalid_argument("It is recommended to allow at least 2MB of ram usage to avoid performance issues. Pass --app-warnings-off to turn off warnings.");
+            }
+
+        }
 
         if (conf.shuffler_opts.warnings) {
 

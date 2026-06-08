@@ -9,26 +9,26 @@
 
 namespace shuffle {
 
+    struct shuffle_context_t {
+
+        void* ptr;
+        size_t size_bits;
+        size_t chunk_size_bits;
+        size_t modification_factor;
+
+    };
+
     // shuffle_not works as both encoder and decoder
-    void shuffle_not(void* ptr, size_t size_bits, size_t chunk_size_bits, unsigned short modification_factor);
-    void shuffle_state_machine_E(void* ptr, size_t size_bits, size_t chunk_size_bits, unsigned short modification_factor);
-    void shuffle_state_machine_D(void* ptr, size_t size_bits, size_t chunk_size_bits, unsigned short modification_factor);
-    void shuffle_prefix_parity_E(void* ptr, size_t size_bits, size_t chunk_size_bits, unsigned short modification_factor);
-    void shuffle_prefix_parity_D(void* ptr, size_t size_bits, size_t chunk_size_bits, unsigned short modification_factor);
 
-};
+    namespace algorithms {
 
-namespace reshuffle {
-
-    namespace chunk {
-
-        void mirror(void* buf, size_t max_size_bits, size_t chunk_size_bits, size_t chunks_in_reshuffle_block, size_t position, bool direction);
-
-    };
-
-    namespace bit {
-        void mirror(void* buf, size_t max_size_bits, size_t chunk_size_bits, size_t chunks_in_reshuffle_block, size_t position, bool direction);
-    };
+        void shuffle_not(const struct shuffle_context_t& context);
+        void state_machine_E(const struct shuffle_context_t& context);
+        void state_machine_D(const struct shuffle_context_t& context);
+        void prefix_parity_E(const struct shuffle_context_t& context);
+        void prefix_parity_D(const struct shuffle_context_t& context);
+        
+    }
 
 };
 

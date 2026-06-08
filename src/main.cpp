@@ -1,6 +1,7 @@
 #define LOCKER_APP_CONFIG_PRINTER_REQUIRED
 #include "args.h"
 #include "arg_parser.h"
+#include "locker.h"
 #include <iostream>
 
 int main(int argc, char* argv[]) {
@@ -33,6 +34,18 @@ int main(int argc, char* argv[]) {
         return 1;
     } catch (const std::exception& e) {
         std::cerr << "Unknown error: " << e.what() << "\n";
+        return 1;
+    }
+
+    // Setup the locker
+
+    try {
+        Locker app_locker(configuration);
+    } catch (const std::runtime_error& err) {
+        std::cerr << err.what() << "\n";
+        return 1;
+    } catch (const std::exception& u_err) {
+        std::cerr << "Unknown error: " << u_err.what() << "\n";
         return 1;
     }
 
