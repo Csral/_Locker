@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Csral chaturyasral@gmail.com
+// SPDX-License-Identifier: GPL-3.0
+
 #pragma once
 #ifndef SHUFFLE_H
 #define SHUFFLE_H

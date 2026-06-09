@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Csral chaturyasral@gmail.com
+// SPDX-License-Identifier: GPL-3.0
+
 #include "shuffle.h"
 #include <vector>
 #include <iostream>

@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Csral chaturyasral@gmail.com
+// SPDX-License-Identifier: GPL-3.0
+
 // #define LOCKER_APP_CONFIG_PRINTER_REQUIRED
 #include "args.h"
 #include "arg_parser.h"
