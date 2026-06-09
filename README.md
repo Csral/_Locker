@@ -10,11 +10,13 @@ The integrity check feature is not currently implemented.
 ### Manual integrity verification (recommended)
 To verify correctness manually:
 
-1. Encode the file using _Locker
-2. Decode the resulting file using the exact same parameters
-3. Compare the decoded file with the original using tools such as `diff`
+1. Encode the file.
+2. Decode the output file using the exact same parameters.
+3. Compare the decoded file with the original one, ideally using tools such as `diff`.
 
-If the files differ, data loss or incorrect transformation may have occurred.
+If the files are different then the integrity verification has failed, i.e., locker cannot be used either on the given file or with current configuration or both.
+
+**NOTE:** If `diff` command produces any output, then the files are different.
 
 ### Important
 **You are required to store all parameters used during encoding as they are required for decoding.**
