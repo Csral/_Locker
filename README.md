@@ -14,7 +14,7 @@ To verify correctness manually:
 2. Decode the output file using the exact same parameters.
 3. Compare the decoded file with the original one, ideally using tools such as `diff`.
 
-If the files are different then the integrity verification has failed, i.e., locker cannot be used either on the given file or with current configuration or both.
+If the files are different then the integrity verification has failed. In this case, locker cannot be used either on the given file or with current configuration or both.
 
 **NOTE:** If `diff` command produces any output, then the files are different.
 
@@ -43,6 +43,17 @@ Open the directory in a terminal and execute the following commands:
 To build the binary in debug mode, execute the following commands instead:
 * `cmake -B build -DCMAKE_BUILD_TYPE=Debug`
 * `cmake --build build`
+
+### Visual Studio Generators
+For visual studio generators, use these commands instead:
+
+#### For release/usage build:
+* `cmake -B build`
+* `cmake --build build --config Release`
+
+#### For debug build:
+* `cmake -B build`
+* `cmake --build build --config Debug`
 
 **NOTE: CMake will specify where the executable output is stored. It is typically located in the build directory or one of its subdirectories.**
 
