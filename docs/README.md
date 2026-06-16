@@ -1,7 +1,7 @@
 {% include_relative mathjax.html %}
 
 # Documentation
-This is the documentation for "Locker". Firstly, the project is named "_Locker" for absolutely no reason as such "locker" and "_locker" refer to the same thing.
+This is the documentation for "Locker". Firstly, the project is named "_Locker" just for fun and there's no hidden meaning behind the underscore, so "Locker" and "_Locker" refer to the same thing.
 
 This documentation specifies application design, the design of algorithms used in Shufflers and Reshufflers.
 
