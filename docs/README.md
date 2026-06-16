@@ -24,11 +24,11 @@ This should not be interpreted as cryptographic security, as the effective searc
 ## Decoder and Reversible nature
 Locker requires every algorithm and possible configuration to yield reversible results. Locker achieves that goal in a simpler way by subjecting every algorithm to be reversible by themselves and **assumes** that the nature is preserved when chained together which by logical and mathematical means is true. Simply put:
 
-Let \(f(x)\) and \(g(x)\) be invertible functions such that:
+Let $$f(x)$$ and $$g(x)$$ be invertible functions such that:
 
 $$f^{-1}(f(x)) = x \quad \text{and} \quad g^{-1}(g(x)) = x$$
 
-Let \(x\) be the input and \(g(x)\) be a Shuffler transformation and \(f(x)\) be a ReShuffler transformation. Assume both are individually invertible, and \(y\) is the final encoded result:
+Let $$x$$ be the input and $$g(x)$$ be a Shuffler transformation and $$f(x)$$ be a ReShuffler transformation. Assume both are individually invertible, and $$y$$ is the final encoded result:
 >
 > $$y = f(g(x))$$
 > 
