@@ -1,3 +1,5 @@
+{% include_relative mathjax.html %}
+
 # Documentation
 This is the documentation for "Locker". Firstly, the project is named "_Locker" for absolutely no reason as such "locker" and "_locker" refer to the same thing.
 
