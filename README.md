@@ -31,31 +31,21 @@ Use -h or --help to get started.
 
 ## Prerequisites
 * CMAKE 3.20 or above.
-* A C++ compiler supporting C++17 standard or above.
+* A C++ compiler supporting C++20 standard or above.
+* Ninja Generator.
 
 ## Building
 Clone the source tree from `https://github.com/Csral/_Locker.git`.
 Open the directory in a terminal and execute the following commands:
-* `cmake -B build -DCMAKE_BUILD_TYPE=Release`
+* `cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release`
 * `cmake --build build`
 
 ### Debug mode building
 To build the binary in debug mode, execute the following commands instead:
-* `cmake -B build -DCMAKE_BUILD_TYPE=Debug`
+* `cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug`
 * `cmake --build build`
 
-### Visual Studio Generators
-For visual studio generators, use these commands instead:
-
-#### For release/usage build:
-* `cmake -B build`
-* `cmake --build build --config Release`
-
-#### For debug build:
-* `cmake -B build`
-* `cmake --build build --config Debug`
-
-**NOTE: CMake will specify where the executable output is stored. It is typically located in the build directory or one of its subdirectories.**
+The binary should be available in build directory usually at build/locker or one of the subdirectories in build directory.
 
 # License
 This project is licensed under GPLv3. For more information, see the [LICENSE](LICENSE) file.
