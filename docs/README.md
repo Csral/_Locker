@@ -96,4 +96,4 @@ For further documentation upon the ReShuffler, read the [ReShuffler Design](Resh
 See [build.md](build.md) for build instructions.
 
 # License
-This project is licensed under GPLv3. For more information, see the [LICENSE](LICENSE) file.
+This project is licensed under GPLv3. For more information, see the [LICENSE](https://github.com/Csral/_Locker/blob/master/LICENSE) file.
