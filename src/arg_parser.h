@@ -243,7 +243,7 @@ Mirror reshuffle with extended arguments:
 )";
 }
 
-static inline size_t get_option_value_number(size_t ctr, const std::vector<std::string>& arg_list) {
+static inline long long get_option_value_number(size_t ctr, const std::vector<std::string>& arg_list) {
 
     if (++ctr >= arg_list.size())
         throw std::invalid_argument("Exceeded maximum arguments provided.");
@@ -303,7 +303,8 @@ static inline size_t get_option_value_u_number(size_t ctr, const std::vector<std
     size_t cutoff_pos = 0x00ULL;
 
     try {
-        response = std::stoull(value, &cutoff_pos);
+
+        response = static_cast<size_t>(std::stoull(value, &cutoff_pos));
 
         if (cutoff_pos < value.size())
             throw std::invalid_argument("Error: No valid conversion could be performed.");
@@ -319,7 +320,7 @@ static inline size_t get_option_value_u_number(size_t ctr, const std::vector<std
     } 
     #ifdef LOCKER_ARG_PARSER_DEBUG
     catch (const std::out_of_range& e) {
-        throw std::out_of_range("Error: Value is too large for unsigned long long.\nE: " + e.what());
+        throw std::out_of_range("Error: Value is too large for unsigned long long.\nE: " + std::string(e.what()));
     #else
     catch (const std::out_of_range&) {
         throw std::out_of_range("Error: Value is too large for unsigned long long.");
@@ -418,9 +419,9 @@ struct app_config argument_parser(int argc, char* argv[]) {
 
                 // belongs to shuffler
                 if (shuffler_options_active)
-                    configuration.shuffler_opts.chunk_size = _tmp_nxt_arg_u_num;
+                    configuration.shuffler_opts.chunk_size =  static_cast<size_t>(_tmp_nxt_arg_u_num);
                 else if (reshuffler_options_active)
-                    configuration.reshuffler_opts.chunk_size = _tmp_nxt_arg_u_num;
+                    configuration.reshuffler_opts.chunk_size = static_cast<size_t>(_tmp_nxt_arg_u_num);
                 else
                     throw std::runtime_error("Internal error.");
 
@@ -480,7 +481,7 @@ struct app_config argument_parser(int argc, char* argv[]) {
                 }
 
                 if (shuffler_options_active)
-                    configuration.shuffler_opts.modification_factor = _tmp_nxt_arg_u_num;
+                    configuration.shuffler_opts.modification_factor = static_cast<size_t>(_tmp_nxt_arg_u_num);
                 else if (reshuffler_options_active)
                     throw std::runtime_error(arg + " is only a suboption for shuffler. Used with reshuffler.");
                 else
@@ -555,7 +556,7 @@ struct app_config argument_parser(int argc, char* argv[]) {
                 if (shuffler_options_active)
                     throw std::runtime_error(arg + " is only a suboption for reshuffler. Used with shuffler.");
                 else if (reshuffler_options_active)
-                    configuration.reshuffler_opts.block_size = _tmp_nxt_arg_u_num;
+                    configuration.reshuffler_opts.block_size = static_cast<size_t>(_tmp_nxt_arg_u_num);
                 else
                     throw std::runtime_error("Internal error.");
 
@@ -576,7 +577,7 @@ struct app_config argument_parser(int argc, char* argv[]) {
                 if (shuffler_options_active)
                     throw std::runtime_error(arg + " is only a suboption for reshuffler. Used with shuffler.");
                 else if (reshuffler_options_active)
-                    configuration.reshuffler_opts.seed = _tmp_nxt_arg_u_num;
+                    configuration.reshuffler_opts.seed = static_cast<size_t>(_tmp_nxt_arg_u_num);
                 else
                     throw std::runtime_error("Internal error.");
 
@@ -650,7 +651,7 @@ struct app_config argument_parser(int argc, char* argv[]) {
                         throw std::runtime_error("Invalid size for ram usage specified: " + std::string(1, last_char)); // Well, looks good for error message.
 
                     try {
-                        memory_allowed_size = std::stoull(_tmp_nxt_arg, &numeric_convert_cutoff_pos);
+                        memory_allowed_size = static_cast<size_t>(std::stoull(_tmp_nxt_arg, &numeric_convert_cutoff_pos));
 
                         if (numeric_convert_cutoff_pos < _tmp_nxt_arg.size())
                             throw std::runtime_error("Error: Invalid numeric value for ram usage: " + _tmp_nxt_arg);

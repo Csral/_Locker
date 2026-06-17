@@ -209,7 +209,7 @@ namespace valid_arguments {
 
 // Helper for optional
 template<typename T>
-std::ostream& print_optional(std::ostream& os, const std::optional<T>& opt) {
+inline std::ostream& print_optional(std::ostream& os, const std::optional<T>& opt) {
     if (opt.has_value()) os << opt.value();
     else                 os << "(none)";
     return os;
@@ -217,7 +217,7 @@ std::ostream& print_optional(std::ostream& os, const std::optional<T>& opt) {
 
 // Helper for vector
 template<typename T>
-std::ostream& print_vector(std::ostream& os, const std::vector<T>& vec) {
+inline std::ostream& print_vector(std::ostream& os, const std::vector<T>& vec) {
     os << "[";
     for (std::size_t i = 0; i < vec.size(); ++i) {
         os << vec[i];
@@ -227,7 +227,7 @@ std::ostream& print_vector(std::ostream& os, const std::vector<T>& vec) {
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const shuffler_options& s) {
+inline std::ostream& operator<<(std::ostream& os, const shuffler_options& s) {
     os << "  shuffler_options:\n"
        << "    algorithm         : " << s.algorithm   << "\n"
        << "    chunk_size        : " << s.chunk_size   << "\n"
@@ -236,7 +236,7 @@ std::ostream& operator<<(std::ostream& os, const shuffler_options& s) {
     return os << "\n";
 }
 
-std::ostream& operator<<(std::ostream& os, const reshuffler_options& r) {
+inline std::ostream& operator<<(std::ostream& os, const reshuffler_options& r) {
     os << "  reshuffler_options:\n"
        << "    algorithm  : " << r.algorithm  << "\n"
        << "    type       : " << r.type        << "\n"
@@ -248,7 +248,7 @@ std::ostream& operator<<(std::ostream& os, const reshuffler_options& r) {
     return os << "\n";
 }
 
-std::ostream& operator<<(std::ostream& os, const app_config& c) {
+inline std::ostream& operator<<(std::ostream& os, const app_config& c) {
     os << "app_config:\n"
        << "  input_file  : " << c.input_file            << "\n"
        << "  output_file : " << c.output_file           << "\n"
