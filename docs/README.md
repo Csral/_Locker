@@ -89,3 +89,9 @@ For further documentation upon the Shuffler, read the [Shuffler design](Shuffler
 ReShuffler is the transformation engine that performs the real "Shuffling". Unlike the Shuffler which modifies the bits, ReShuffler preserves the bits but shuffles them.
 
 For further documentation upon the ReShuffler, read the [ReShuffler Design](Reshuffler.md) and [ReShuffler algorithms](Shuffler/Shuffler_algorithms.md).
+
+# Building from Source
+See [build.md](build.md) for build instructions.
+
+# License
+This project is licensed under GPLv3. For more information, see the [LICENSE](LICENSE) file.
