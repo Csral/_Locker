@@ -24,10 +24,11 @@ This should not be interpreted as cryptographic security, as the effective searc
 ## Decoder and Reversible nature
 Locker requires every algorithm and possible configuration to yield reversible results. Locker achieves that goal in a simpler way by subjecting every algorithm to be reversible by themselves and **assumes** that the nature is preserved when chained together which by logical and mathematical means is true. Simply put:
 
-Let $f(x)$ and $g(x)$ be invertible functions such that:
+Let $$f(x)$$ and $$g(x)$$ be invertible functions such that:
+
 $$f^{-1}(f(x)) = x \quad \text{and} \quad g^{-1}(g(x)) = x$$
 
-Let $x$ be the input and $g(x)$ be a Shuffler transformation and $f(x)$ be a ReShuffler transformation. Assume both are individually invertible, and $y$ is the final encoded result:
+Let $$x$$ be the input and $$g(x)$$ be a Shuffler transformation and $$f(x)$$ be a ReShuffler transformation. Assume both are individually invertible, and $$y$$ is the final encoded result:
 >
 > $$y = f(g(x))$$
 > 
@@ -88,7 +89,8 @@ For further documentation upon the Shuffler, read the [Shuffler design](Shuffler
 # ReShuffler
 ReShuffler is the transformation engine that performs the real "Shuffling". Unlike the Shuffler which modifies the bits, ReShuffler preserves the bits but shuffles them.
 
-For further documentation upon the ReShuffler, read the [ReShuffler Design](Reshuffler.md) and [ReShuffler algorithms](Shuffler/Shuffler_algorithms.md).
+For further documentation upon the ReShuffler, read the [ReShuffler Design](Reshuffler.md) and [ReShuffler algorithms](Reshuffler/algorithms.md).
+
 
 # Building from Source
 See [build.md](build.md) for build instructions.
